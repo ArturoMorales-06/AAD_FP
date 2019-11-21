@@ -1,0 +1,8 @@
+For this project, you will have to implement three operations over large graphs.
+
+1.- Display the k-hop neighborhood of a given node u.
+2.- Find and display a path of length k, that has node u as one of the endpoints
+3.- Display a subgraph containing an independent set of size k that includes node u. 
+    Display the nodes in the independent set with a different color. 
+
+For your experiments, you will use the TWITTER-REAL-GRAPH-PARTIAL graph which has 580.8k nodes and the ROADNET-PA graph which has 1.1M nodes. 
