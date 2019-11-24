@@ -2,14 +2,31 @@ import networkx as nx
 import matplotlib.pyplot as plt 
 import bfs, sys
 
+def color_graph(G, set, color1, color2):
+    try:
+        node_list = G.nodes()
+        color_map = []
+        for node in node_list:
+            if(set.count(node) == 0):
+                color_map.append(color2)
+            else:
+                color_map.append(color1)
+        return color_map
+    except:
+        sys.exit("Invalid Input - CG") 
+
 def khop_neighborhood(G, u, k):
     try:
-        bfs_result = bfs.bfs(G, u, k)
+        bfs_result = bfs.bfs(G, u, k+1)
         neighborhood_list = []
+        odd_layers = []
         for i in range(len(bfs_result)):
             neighborhood_list += bfs_result[i]
+            if(i % 2 == 1):
+                odd_layers += bfs_result[i]
         khop_neighborhood_graph = nx.subgraph(G, neighborhood_list)
-        nx.draw(khop_neighborhood_graph)
+        color_map = color_graph(khop_neighborhood_graph, odd_layers, 'yellow', 'green')
+        nx.draw(khop_neighborhood_graph, node_color = color_map, with_labels=True)
         plt.show()
     except:
         sys.exit("Invalid Input - KHopN")
@@ -30,7 +47,7 @@ def k_length_path(G, u, k):
                     break
                 else:
                     continue
-        nx.draw(k_path)
+        nx.draw(k_path, with_labels=True)
         plt.show()
     except:
         sys.exit("Invalid Input - KLP")
@@ -39,77 +56,61 @@ def k_independent_set(G, u, k):
     try:
         bfs_result = bfs.bfs(G, u, k)
         bfs_length = len(bfs_result)
-        u_neighbors = list(nx.neighbors(G, u))
-        subgraph_nodes = []
+        adjacent_nodes = []
         independent_set = []
-        subgraph_nodes.append(u)
-        for i in range(1, bfs_length - 1):
-            for node in bfs_result[i]:
-                for neighbor in list(nx.neighbors(G, node)):
-                    if(u_neighbors.count(neighbor) == 0 and neighbor != u and independent_set.count(neighbor) == 0 and subgraph_nodes.count(neighbor) == 0):
-                        independent_set.append(neighbor)
-                        if(subgraph_nodes.count(node) == 0):
-                            subgraph_nodes.append(node)
-                    if(len(independent_set) >= k-1):
+        adj_flag = False
+        for i in range(0,k):
+            if(i % 2 == 0):
+                for node in bfs_result[i]:
+                    current_neighbors = list(nx.neighbors(G, node))
+                    for ind_node in independent_set:
+                        if(current_neighbors.count(ind_node) != 0):
+                            adjacent_nodes.append(node)
+                            adj_flag = True
+                            break
+                        else:
+                            continue
+                    if(adj_flag == False):
+                        independent_set.append(node)
+                    if(len(independent_set) >= k):
                         break
-                    else:
-                        continue
-                if(len(independent_set) >= k-1):
+                    adj_flag = False
+                if(len(independent_set) >= k):
                     break
-            if(len(independent_set) >= k-1):
-                break
-        subgraph_nodes = subgraph_nodes + independent_set
-        k_ind_set_graph = nx.subgraph(G, subgraph_nodes)
-        nx.draw(k_ind_set_graph)
-        plt.show()
+            else:
+                for adj_node in bfs_result[i]:
+                    adjacent_nodes.append(adj_node)
 
+            if(len(independent_set) >= k):
+                break
+        subgraph_nodes = independent_set + adjacent_nodes
+        k_ind_set_graph = nx.subgraph(G, subgraph_nodes)
+        color_map = color_graph(k_ind_set_graph, independent_set, 'red', 'blue')
+        nx.draw(k_ind_set_graph, node_color = color_map, with_labels = True)
+        plt.show()
     except:
         sys.exit("Invalid Input - KIS")
 
-# def k_independent_set(G, u, k):
-#     try:
-#         G_nodes = G.nodes()
-#         u_neighbors = list(nx.neighbors(G, u))
-#         subgraph_nodes = []
-#         for i in range(k):
-#             for node in G_nodes:
-#                 if(u_neighbors.count(node) == 0):
-#                     subgraph_nodes.append(node)
-#                     break
-#                 else:
-#                     continue
-#         k_ind_set_graph = nx.subgraph(G, subgraph_nodes)
-#         nx.draw(k_ind_set_graph)
-#         plt.show()
-#     except:
-#         sys.exit("Invalid Input - KIS")
-
-
-# Create a tetrahedral graph and write it to a file  
+# Read or Create a graph and write it to a file  
 # tet = nx.tetrahedral_graph()
 # nx.write_adjlist(tet, "tet.txt")
 
 # Read a graph from a file
-tet = nx.read_adjlist("road-road-ad-list.txt")
-# tet = nx.read_adjlist("tet.txt")
-nx.freeze(tet)
+G = nx.read_adjlist("road-road-ad-list.txt")
+# G = nx.read_adjlist("converted_twitter.txt")
+# G = nx.read_adjlist("tet.txt")
+nx.freeze(G)
 
-# Show the nodes and edges in the graph 
-# print("Nodes: " + str(tet.nodes))
-# print("Edges: " + str(tet.edges))
+# TRY
 
-# DEBUG ZONE 
+# PATH
+# k_length_path(G, '1', 6)
 
-k_independent_set(tet, '1', 5)
+# NEIGHBORHOOD
+# khop_neighborhood(G, '1', 3)
 
-# k_length_path(tet, '1', 4)
+# INDEPENDENT SET
+# k_independent_set(G, '1', 5)
 
-# khop_neighborhood(tet, '1', 3)
-
-# bf = bfs.bfs(tet, '1', 2)
-# print(bf)
-
-# print(tet.nodes())
-
-# nx.draw(tet)
-# plt.show()
+# BFS
+# print(bfs.bfs(G, '1', 2))
